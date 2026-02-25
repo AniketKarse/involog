@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { currencyCodeSchema, FilterSets, supplimentalFields, SupplimentalFieldsFilterSet } from './_base';
+import { InvoiceStates, InvoiceStateVisitor } from '../consts/invoice-states';
 
 const itemEntryFields = {
   itemId: z.string().uuid(),
@@ -71,6 +72,7 @@ const invoiceFields = {
     .optional(),
   prefixId: z.string().uuid(),
   number: z.string().max(255, 'Number cannot be longer than 255 chars').min(2, 'Number must have atleast 2 chars.'),
+  state: z.enum(InvoiceStates),
   date: z.string().refine(isValidDate, 'Date must be formatted with YYYY-MM-DD format.'), // date string, YYYY-MM-DD
   dueDate: z.string().refine(isValidDate, 'Date must be formatted with YYYY-MM-DD format.').optional(), // date string, YYYY-MM-DD
   currency: currencyCodeSchema,
@@ -80,6 +82,8 @@ const invoiceFields = {
   note: z.string().max(5000, 'Note cannot be longer than 5000 chars').optional(),
   isArchived: z.boolean(),
 };
+
+export type InvoiceState = z.infer<typeof invoiceFields.state>;
 
 export const invoiceSchema = z.object({
   ...supplimentalFields,
@@ -92,9 +96,10 @@ export const createInvoiceSchema = z.object({
 });
 export type CreateInvoiceSchema = z.infer<typeof createInvoiceSchema>;
 
+const { state: _state, ...updateInvoiceFields } = invoiceFields;
 export const updateInvoiceSchema = z.object({
   id: supplimentalFields.id,
-  ...invoiceFields,
+  ...updateInvoiceFields,
 });
 export type UpdateInvoiceSchema = z.infer<typeof updateInvoiceSchema>;
 
@@ -111,25 +116,39 @@ export const filterInvoicesSchema = z.object({
   dueDate: FilterSets.dateRange().optional(),
   currency: FilterSets.discreteValues(invoiceFields.currency).optional(),
   clientId: FilterSets.discreteValues(invoiceFields.clientId).optional(),
+  states: FilterSets.discreteValues(invoiceFields.state).optional(),
   items: FilterSets.discreteValues(itemEntryFields.itemId).optional(),
 });
 export type FilterInvoicesSchema = z.infer<typeof filterInvoicesSchema>;
 
 export const invoiceInfoFields = {
-  ...supplimentalFields,
   clientId: invoiceFields.clientId,
   subject: invoiceFields.subject,
   prefixId: invoiceFields.prefixId,
   number: invoiceFields.number,
+  state: invoiceFields.state,
   date: invoiceFields.date,
   dueDate: invoiceFields.dueDate,
   currency: invoiceFields.currency,
   isArchived: invoiceFields.isArchived,
 };
-export const invoiceInfoSchema = z.object(invoiceInfoFields);
-export type InvoiceInfoSchema = z.infer<typeof invoiceInfoSchema>;
-
-export const updateInvoiceInfoSchema = z.object({
+export const invoiceInfoSchema = z.object({
+  ...supplimentalFields,
   ...invoiceInfoFields,
 });
+export type InvoiceInfoSchema = z.infer<typeof invoiceInfoSchema>;
+
+const { state: __state, ...updateInvoiceInfoFields } = invoiceInfoFields;
+export const updateInvoiceInfoSchema = z.object({
+  id: supplimentalFields.id,
+  ...updateInvoiceInfoFields,
+});
 export type UpdateInvoiceInfoSchema = z.infer<typeof updateInvoiceInfoSchema>;
+
+export const updateInvoiceInfoStateSchema = z.object({
+  id: supplimentalFields.id,
+  state: z.enum(
+    InvoiceStates.filter((s) => InvoiceStateVisitor(s).canBeManuallySet) as [InvoiceState, ...InvoiceState[]]
+  ),
+});
+export type UpdateInvoiceInfoStateSchema = z.infer<typeof updateInvoiceInfoStateSchema>;

@@ -15,8 +15,11 @@ import {
   type UpdateInvoiceSchema,
   type UpdateInvoiceInfoSchema,
   updateInvoiceInfoSchema,
+  type UpdateInvoiceInfoStateSchema,
+  updateInvoiceInfoStateSchema,
 } from '~~/shared/schemas/invoice';
 import { extractDate } from '~~/shared/utils/general';
+import { InvoiceStateVisitor } from '~~/shared/consts/invoice-states';
 
 export class InvoiceServiceImpl implements InvoiceService {
   private invoices: Ref<InvoiceSchema[]>;
@@ -92,22 +95,26 @@ export class InvoiceServiceImpl implements InvoiceService {
     if (filterArgs.items && filterArgs.items.length > 0) {
       filtered = filtered.filter((i) => i.items.some((ie) => filterArgs.items!.includes(ie.itemId)));
     }
+    if (filterArgs.states && filterArgs.states.length > 0) {
+      filtered = filtered.filter((i) => filterArgs.states!.includes(i.clientId));
+    }
 
     // Map to info shape
     const infos: InvoiceInfoSchema[] = filtered.map((i) =>
       invoiceInfoSchema.parse({
-          id: i.id,
-          createdAt: i.createdAt,
-          updatedAt: i.updatedAt,
-          clientId: i.clientId,
-          subject: i.subject,
-          prefixId: i.prefixId,
-          number: i.number,
-          date: i.date,
-          dueDate: i.dueDate,
-          currency: i.currency,
-          isArchived: i.isArchived,
-        })
+        id: i.id,
+        createdAt: i.createdAt,
+        updatedAt: i.updatedAt,
+        clientId: i.clientId,
+        subject: i.subject,
+        prefixId: i.prefixId,
+        number: i.number,
+        state: i.state,
+        date: i.date,
+        dueDate: i.dueDate,
+        currency: i.currency,
+        isArchived: i.isArchived,
+      } satisfies InvoiceInfoSchema)
     );
     return infos;
   }
@@ -123,17 +130,16 @@ export class InvoiceServiceImpl implements InvoiceService {
       subject: inv.subject,
       prefixId: inv.prefixId,
       number: inv.number,
+      state: inv.state,
       date: inv.date,
       dueDate: inv.dueDate,
       currency: inv.currency,
       isArchived: inv.isArchived,
-    });
+    } satisfies InvoiceInfoSchema);
   }
 
   async loadById(id: string): Promise<InvoiceSchema | null> {
-    const invoice = this.invoices.value.find((c) => c.id === id) || null;
-    console.log({invoice});
-    return invoice
+    return this.invoices.value.find((c) => c.id === id) || null;
   }
 
   async create(params: CreateInvoiceSchema): Promise<void> {
@@ -165,9 +171,27 @@ export class InvoiceServiceImpl implements InvoiceService {
     if (!existing) {
       throw new Error('Invoice not found');
     }
-    const { id, ...rest } = args;
+    const { canUpdate } = InvoiceStateVisitor(existing.state);
+    if (!canUpdate) {
+      throw new Error('Bad Request: Cannot edit invoice');
+    }
     this.invoices.value = this.invoices.value.map((i) =>
-      i.id === id ? { ...i, ...rest, updatedAt: new Date().toISOString() } : i
+      i.id === args.id ? { ...i, ...args, updatedAt: new Date().toISOString() } : i
+    );
+  }
+
+  async updateState(params: UpdateInvoiceInfoStateSchema): Promise<void> {
+    const args = updateInvoiceInfoStateSchema.parse(params);
+    const existing = this.invoices.value.find((c) => c.id === args.id);
+    if (!existing) {
+      throw new Error('Invoice not found');
+    }
+    const { canUpdate } = InvoiceStateVisitor(existing.state);
+    if (!canUpdate) {
+      throw new Error('Bad Request: Cannot edit invoice');
+    }
+    this.invoices.value = this.invoices.value.map((i) =>
+      i.id === args.id ? { ...i, state: args.state, updatedAt: new Date().toISOString() } : i
     );
   }
 
