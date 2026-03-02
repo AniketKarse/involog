@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NuxtLink } from '#components';
 import { MoreHorizontal, Edit3 } from 'lucide-vue-next';
-import type { InvoiceInfoSchema, InvoiceSchema } from '~~/shared/schemas/invoice';
+import type { InvoiceInfoSchema } from '~~/shared/schemas/invoice';
 
 defineProps<{
   info: InvoiceInfoSchema;

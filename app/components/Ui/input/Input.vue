@@ -9,6 +9,7 @@ const props = withDefaults(
     modelValue?: string | number;
     class?: HTMLAttributes['class'];
     size?: 'sm' | 'default' | 'lg';
+    disabled?: boolean;
   }>(),
   {
     size: 'default',
@@ -37,5 +38,6 @@ const modelValue = useVModel(props, 'modelValue', emits, {
         props.size === 'lg' && 'h-10 text-base'
       )
     "
+    :disabled="disabled"
   />
 </template>

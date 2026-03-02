@@ -5,6 +5,7 @@ import { Check, ReceiptText, Plus } from 'lucide-vue-next';
 
 const props = defineProps<{
   modelValue?: string;
+  disabled?: boolean;
 }>();
 
 const selectedValue = useVModel(props, 'modelValue');
@@ -27,7 +28,7 @@ const showCreateNewPrefix = computed(
 
 <template>
   <ShadPopover v-model:open="open">
-    <ShadPopoverTrigger :value="selectedValue">
+    <ShadPopoverTrigger :value="selectedValue" :disabled="disabled">
       <template #icon>
         <ReceiptText class="h-4 w-4 -ml-1" />
       </template>

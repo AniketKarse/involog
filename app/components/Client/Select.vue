@@ -4,6 +4,7 @@ import { Users } from 'lucide-vue-next';
 const props = defineProps<{
   modelValue?: string | string[];
   multiple?: boolean;
+  disabled?: boolean;
 }>();
 
 const selectedValue = useVModel(props, 'modelValue');
@@ -12,7 +13,7 @@ const { data: clients } = useQuery(clientsQueryOptions);
 </script>
 
 <template>
-  <ShadSelect v-model:model-value="selectedValue" :multiple="multiple">
+  <ShadSelect v-model:model-value="selectedValue" :multiple="multiple" :disabled="disabled">
     <ShadSelectTrigger>
       <template #icon>
         <Users class="h-4 w-4 -ml-1" />

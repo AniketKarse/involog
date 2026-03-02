@@ -33,5 +33,8 @@ watchDebounced(
     <div class="w-48">
       <ItemSelect v-model="filter.items" multiple />
     </div>
+    <div class="w-48">
+      <InvoiceSelectState v-model="filter.states" multiple />
+    </div>
   </div>
 </template>
