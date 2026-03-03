@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { currencyCodeSchema, FilterSets, supplimentalFields, SupplimentalFieldsFilterSet } from './_base';
-import { InvoiceStates, InvoiceStateVisitor } from '../consts/invoice-states';
+import { InvoiceState, InvoiceStates, InvoiceStateVisitor } from '../consts/invoice-states';
 
 const itemEntryFields = {
   itemId: z.string().uuid(),
@@ -83,16 +83,15 @@ const invoiceFields = {
   isArchived: z.boolean(),
 };
 
-export type InvoiceState = z.infer<typeof invoiceFields.state>;
-
 export const invoiceSchema = z.object({
   ...supplimentalFields,
   ...invoiceFields,
 });
 export type InvoiceSchema = z.infer<typeof invoiceSchema>;
 
+const { state: ___state, ...createInvoiceFields } = invoiceFields;
 export const createInvoiceSchema = z.object({
-  ...invoiceFields,
+  ...createInvoiceFields,
 });
 export type CreateInvoiceSchema = z.infer<typeof createInvoiceSchema>;
 

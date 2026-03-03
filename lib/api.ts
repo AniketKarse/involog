@@ -30,6 +30,14 @@ import type {
   DeleteItemSchema,
   FilterItemsSchema,
 } from '~~/shared/schemas/item';
+import type {
+  CreatePaymentSchema,
+  DeletePaymentSchema,
+  FilterPaymentSchema,
+  FindPaymentsSchema,
+  PaymentInfoSchema,
+  PaymentSchema,
+} from '~~/shared/schemas/payment';
 
 import type {
   TransactionSchema,
@@ -65,6 +73,10 @@ export interface InvoiceService {
   updateInfo(params: UpdateInvoiceInfoSchema): Promise<void>;
   updateState(params: UpdateInvoiceInfoStateSchema): Promise<void>;
   delete(params: DeleteInvoiceSchema): Promise<void>;
+  fetch(params: FilterPaymentSchema): Promise<PaymentInfoSchema>;
+  find(params: FindPaymentsSchema): Promise<PaymentSchema>;
+  createPayment(params: CreatePaymentSchema): Promise<void>;
+  deletePayment(params: DeletePaymentSchema): Promise<void>;
 }
 
 export interface InvoicePrefixService {

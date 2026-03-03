@@ -4,6 +4,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { useForm } from 'vee-validate';
 import type { AdjustmentEntrySchema, ItemEntrySchema, InvoiceSchema } from '~~/shared/schemas/invoice';
 import { createInvoiceSchema, updateInvoiceSchema } from '~~/shared/schemas/invoice';
+import { InvoiceState, InvoiceStates, InvoiceStateVisitor } from '~~/shared/consts/invoice-states';
 
 interface ItemEntryHolder {
   entry: ItemEntrySchema;
@@ -47,6 +48,7 @@ const s2 = watch(loading, (newLoading) => {
 stopHandles.push(s1, s2);
 
 const isUpdating = !!props.invoice;
+const canUpdate = computed(() => (isUpdating ? InvoiceStateVisitor(props.invoice.state).canUpdate : true));
 
 const formSchema = toTypedSchema(isUpdating ? updateInvoiceSchema : createInvoiceSchema);
 const form = useForm({
@@ -185,14 +187,14 @@ defineExpose({ submit });
 
 <template>
   <section class="flex w-full min-w-96">
-    <form class="flex flex-col w-1/3 p-2 space-y-4" @submit.prevent="submit">
+    <form class="flex flex-col w-[40%] p-2 space-y-4" @submit.prevent="submit">
       <section class="space-y-2 border-b border-zinc-200 pb-4">
         <div class="text-base font-bold">Details</div>
         <ShadFormField v-slot="{ componentField }" name="clientId">
           <ShadFormItem>
             <ShadFormLabel>Client<span class="text-red-700">*</span></ShadFormLabel>
             <ShadFormControl>
-              <ClientSelect v-bind="componentField" />
+              <ClientSelect v-bind="componentField" :disabled="!canUpdate" />
             </ShadFormControl>
             <ShadFormMessage />
           </ShadFormItem>
@@ -202,7 +204,7 @@ defineExpose({ submit });
             <ShadFormItem class="w-1/2">
               <ShadFormLabel>Invoice Prefix<span class="text-red-700">*</span></ShadFormLabel>
               <ShadFormControl>
-                <InvoiceSelectPrefix v-bind="componentField" class="w-full" />
+                <InvoiceSelectPrefix v-bind="componentField" :disabled="!canUpdate" class="w-full" />
               </ShadFormControl>
               <ShadFormMessage />
             </ShadFormItem>
@@ -211,7 +213,7 @@ defineExpose({ submit });
             <ShadFormItem class="w-1/2">
               <ShadFormLabel>Invoice number<span class="text-red-700">*</span></ShadFormLabel>
               <ShadFormControl>
-                <ShadInput v-bind="componentField" type="string" placeholder="2/3-ABC" />
+                <ShadInput v-bind="componentField" type="string" placeholder="2/3-ABC" :disabled="!canUpdate" />
               </ShadFormControl>
               <ShadFormMessage />
             </ShadFormItem>
@@ -221,7 +223,7 @@ defineExpose({ submit });
           <ShadFormItem>
             <ShadFormLabel>Subject</ShadFormLabel>
             <ShadFormControl>
-              <ShadInput v-bind="componentField" type="string" placeholder="Invoice for..." />
+              <ShadInput v-bind="componentField" type="string" placeholder="Invoice for..." :disabled="!canUpdate" />
             </ShadFormControl>
             <ShadFormMessage />
           </ShadFormItem>
@@ -230,7 +232,7 @@ defineExpose({ submit });
           <ShadFormItem>
             <ShadFormLabel>Currency<span class="text-red-700">*</span></ShadFormLabel>
             <ShadFormControl>
-              <SelectCurrency v-bind="componentField" class="w-full" />
+              <SelectCurrency v-bind="componentField" :disabled="!canUpdate" class="w-full" />
             </ShadFormControl>
             <ShadFormMessage />
           </ShadFormItem>
@@ -240,7 +242,7 @@ defineExpose({ submit });
             <ShadFormItem class="w-1/2">
               <ShadFormLabel>Issue Date<span class="text-red-700">*</span></ShadFormLabel>
               <ShadFormControl>
-                <SelectDate v-bind="componentField" class="w-full" />
+                <SelectDate v-bind="componentField" :disabled="!canUpdate" class="w-full" />
               </ShadFormControl>
               <ShadFormMessage />
             </ShadFormItem>
@@ -256,14 +258,16 @@ defineExpose({ submit });
           </ShadFormField>
         </div>
         <div class="flex items-center space-x-2">
-          <ShadCheckbox id="show-due-date" v-model="showDueDate" />
+          <ShadCheckbox id="show-due-date" v-model="showDueDate" :disabled="!canUpdate" />
           <ShadLabel for="show-due-date">Include Due Date</ShadLabel>
         </div>
       </section>
       <section class="space-y-2 border-zinc-200" :class="{ 'border-b': itemEntries.length === 0 }">
         <div class="flex justify-between items-center">
           <div class="text-base font-semibold">Items</div>
-          <ShadButton type="button" size="xs" variant="outline-subtle" @click="addItemEntry">Add</ShadButton>
+          <ShadButton type="button" size="xs" variant="outline-subtle" @click="addItemEntry" :disabled="!canUpdate"
+            >Add</ShadButton
+          >
         </div>
         <section class="space-y-4">
           <ShadAccordion v-model="openEntryValue" type="single" class="w-full" collapsible :unmount-on-hide="false">
@@ -292,6 +296,7 @@ defineExpose({ submit });
                   v-model:has-errors="itemEntries[index]!.hasErrors"
                   v-model:subtotal-formatted="itemEntries[index]!.subtotalFormatted"
                   :currency="form.values.currency"
+                  v-model:canUpdate="canUpdate"
                 />
               </ShadAccordionContent>
             </ShadAccordionItem>
@@ -301,7 +306,15 @@ defineExpose({ submit });
       <section class="space-y-2 border-zinc-200" :class="{ 'border-b': taxAdjustmentEntries.length === 0 }">
         <div class="flex justify-between items-center">
           <div class="text-base font-semibold">Taxes</div>
-          <ShadButton type="button" size="xs" variant="outline-subtle" @click="addTaxAdjustmentEntry"> Add </ShadButton>
+          <ShadButton
+            type="button"
+            size="xs"
+            variant="outline-subtle"
+            @click="addTaxAdjustmentEntry"
+            :disabled="!canUpdate"
+          >
+            Add
+          </ShadButton>
         </div>
         <section class="space-y-4">
           <ShadAccordion v-model="openEntryValue" type="single" class="w-full" collapsible :unmount-on-hide="false">
@@ -331,6 +344,7 @@ defineExpose({ submit });
                   v-model:has-errors="taxAdjustmentEntries[index]!.hasErrors"
                   v-model:adjustment-formatted="taxAdjustmentEntries[index]!.adjustmentFormatted"
                   :currency="form.values.currency"
+                  v-model:canUpdate="canUpdate"
                 />
               </ShadAccordionContent>
             </ShadAccordionItem>
@@ -340,7 +354,13 @@ defineExpose({ submit });
       <section class="space-y-2 border-zinc-200" :class="{ 'border-b': discountAdjustmentEntries.length === 0 }">
         <div class="flex justify-between items-center">
           <div class="text-base font-semibold">Discounts</div>
-          <ShadButton type="button" size="xs" variant="outline-subtle" @click="addDiscountAdjustmentEntry">
+          <ShadButton
+            type="button"
+            size="xs"
+            variant="outline-subtle"
+            @click="addDiscountAdjustmentEntry"
+            :disabled="!canUpdate"
+          >
             Add
           </ShadButton>
         </div>
@@ -376,6 +396,7 @@ defineExpose({ submit });
                   v-model:has-errors="discountAdjustmentEntries[index]!.hasErrors"
                   v-model:adjustment-formatted="discountAdjustmentEntries[index]!.adjustmentFormatted"
                   :currency="form.values.currency"
+                  v-model:canUpdate="canUpdate"
                 />
               </ShadAccordionContent>
             </ShadAccordionItem>
@@ -390,7 +411,11 @@ defineExpose({ submit });
           <ShadFormItem>
             <ShadFormLabel>Note</ShadFormLabel>
             <ShadFormControl>
-              <ShadTextarea v-bind="componentField" placeholder="Add any additional notes here..." />
+              <ShadTextarea
+                v-bind="componentField"
+                placeholder="Add any additional notes here..."
+                :disabled="!canUpdate"
+              />
             </ShadFormControl>
             <ShadFormMessage />
           </ShadFormItem>
@@ -402,6 +427,6 @@ defineExpose({ submit });
         </div>
       </section>
     </form>
-    <div class="w-2/3 bg-zinc-50"></div>
+    <InvoiceManage class="w-[60%] bg-zinc-300 rounded-lg" />
   </section>
 </template>

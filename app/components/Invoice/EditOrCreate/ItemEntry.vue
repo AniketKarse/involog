@@ -11,6 +11,7 @@ const props = defineProps<{
   hasErrors: boolean;
   subtotalFormatted: string;
   currency?: string;
+  canUpdate: boolean;
 }>();
 
 const itemEntry = useVModel(props, 'modelValue');
@@ -62,7 +63,7 @@ watch(() => props.currency, onFormValuesChange);
       <ShadFormItem>
         <ShadFormLabel>Item<span class="text-red-700">*</span></ShadFormLabel>
         <ShadFormControl>
-          <ItemSelect v-bind="componentField" />
+          <ItemSelect v-bind="componentField" :disabled="!canUpdate" />
         </ShadFormControl>
         <ShadFormMessage />
       </ShadFormItem>
@@ -71,7 +72,7 @@ watch(() => props.currency, onFormValuesChange);
       <ShadFormItem>
         <ShadFormLabel>Quantity<span class="text-red-700">*</span></ShadFormLabel>
         <ShadFormControl>
-          <ShadInput type="number" min="1" v-bind="componentField" />
+          <ShadInput type="number" min="1" v-bind="componentField" :disabled="!canUpdate" />
         </ShadFormControl>
         <ShadFormMessage />
       </ShadFormItem>
@@ -80,7 +81,7 @@ watch(() => props.currency, onFormValuesChange);
       <ShadFormItem>
         <ShadFormLabel>Narration</ShadFormLabel>
         <ShadFormControl>
-          <ShadTextarea v-bind="componentField" />
+          <ShadTextarea v-bind="componentField" :disabled="!canUpdate" />
         </ShadFormControl>
         <ShadFormMessage />
       </ShadFormItem>

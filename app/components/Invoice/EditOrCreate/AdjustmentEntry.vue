@@ -11,6 +11,7 @@ const props = defineProps<{
   hasErrors: boolean;
   adjustmentFormatted: string;
   currency?: string;
+  canUpdate: boolean;
 }>();
 
 const adjustmentEntry = useVModel(props, 'modelValue');
@@ -55,7 +56,11 @@ watch(() => props.currency, onFormValuesChange);
       <ShadFormItem>
         <ShadFormLabel>Label<span class="text-red-700">*</span></ShadFormLabel>
         <ShadFormControl>
-          <ShadInput v-bind="componentField" :placeholder="entryType === 'tax' ? 'GST/VAT' : 'Discount'" />
+          <ShadInput
+            v-bind="componentField"
+            :placeholder="entryType === 'tax' ? 'GST/VAT' : 'Discount'"
+            :disabled="!canUpdate"
+          />
         </ShadFormControl>
         <ShadFormMessage />
       </ShadFormItem>
@@ -67,6 +72,7 @@ watch(() => props.currency, onFormValuesChange);
             <ShadCheckbox
               :model-value="componentField.modelValue"
               @update:model-value="componentField['onUpdate:modelValue']"
+              :disabled="!canUpdate"
             />
           </ShadFormControl>
           <ShadFormLabel>Absolute Amount</ShadFormLabel>
@@ -84,6 +90,7 @@ watch(() => props.currency, onFormValuesChange);
             :max="values?.isAbsolute ? undefined : 100"
             :placeholder="values?.isAbsolute ? '120' : '12%'"
             v-bind="componentField"
+            :disabled="!canUpdate"
           />
         </ShadFormControl>
         <ShadFormMessage />

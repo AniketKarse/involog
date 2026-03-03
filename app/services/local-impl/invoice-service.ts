@@ -19,7 +19,7 @@ import {
   updateInvoiceInfoStateSchema,
 } from '~~/shared/schemas/invoice';
 import { extractDate } from '~~/shared/utils/general';
-import { InvoiceStateVisitor } from '~~/shared/consts/invoice-states';
+import { InvoiceState, InvoiceStateVisitor } from '~~/shared/consts/invoice-states';
 
 export class InvoiceServiceImpl implements InvoiceService {
   private invoices: Ref<InvoiceSchema[]>;
@@ -147,6 +147,7 @@ export class InvoiceServiceImpl implements InvoiceService {
     const invoice: InvoiceSchema = {
       ...args,
       id: uuid(),
+      state: InvoiceState.CREATED,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
