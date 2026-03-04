@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import type { InvoiceSchema } from '~~/shared/schemas/invoice';
+
+const { mutateAsync: deleteAction, isPending: deleteActionPending } = useDeleteInvoiceMutation();
+
+defineProps<{
+  invoice: InvoiceSchema;
+}>();
+
 const deleteActionOpen = ref(false);
 const markSubmittedAction = ref(false);
 const deleteInvoice = () => {
@@ -34,7 +42,11 @@ const markAsSubmitted = () => {
           variant="danger"
           v-model:open="deleteActionOpen"
           @cancel="deleteActionOpen = false"
-          @confirm="deleteInvoice()"
+          @confirm="
+            deleteAction({ id: invoice.id }).then(() => {
+              deleteActionOpen = false;
+            })
+          "
         >
           <template #default> Delete </template>
           <template #title> Deleting Invoice </template>

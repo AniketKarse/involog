@@ -19,7 +19,7 @@ interface AdjustmentEntryHolder {
 }
 
 const props = defineProps<{
-  invoice?: InvoiceSchema;
+  invoice: InvoiceSchema;
 }>();
 
 const emit = defineEmits<{
@@ -427,6 +427,6 @@ defineExpose({ submit });
         </div>
       </section>
     </form>
-    <InvoiceManage class="w-[60%] bg-zinc-300 rounded-lg" />
+    <InvoiceManage :invoice="invoice" class="w-[60%] bg-zinc-300 rounded-lg" />
   </section>
 </template>
