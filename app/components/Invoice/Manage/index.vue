@@ -4,15 +4,12 @@ import type { InvoiceSchema } from '~~/shared/schemas/invoice';
 const { mutateAsync: deleteAction, isPending: deleteActionPending } = useDeleteInvoiceMutation();
 
 defineProps<{
-  invoice: InvoiceSchema;
+  invoice?: InvoiceSchema;
+  isUpdating: boolean;
 }>();
 
 const deleteActionOpen = ref(false);
 const markSubmittedAction = ref(false);
-const deleteInvoice = () => {
-  console.log('invoice deleted');
-  deleteActionOpen.value = false;
-};
 const markAsSubmitted = () => {
   console.log('The Invoice has been submitted');
   markSubmittedAction.value = false;
@@ -21,7 +18,7 @@ const markAsSubmitted = () => {
 <template>
   <div class="p-4 flex flex-col">
     <div class="flex justify-end gap-2">
-      <ShadButton type="submit" variant="default" @click.prevent="markSubmittedAction = true">
+      <ShadButton type="submit" variant="default" @click.prevent="markSubmittedAction = true" v-show="isUpdating">
         <AbstractConfirmationBox
           confirm-action="Submit"
           variant="default"
@@ -36,16 +33,18 @@ const markAsSubmitted = () => {
           </template>
         </AbstractConfirmationBox>
       </ShadButton>
-      <ShadButton type="submit" variant="destructive" @click.prevent="deleteActionOpen = true">
+      <ShadButton type="submit" variant="destructive" @click.prevent="deleteActionOpen = true" v-show="isUpdating">
         <AbstractConfirmationBox
           confirm-action="Delete"
           variant="danger"
           v-model:open="deleteActionOpen"
           @cancel="deleteActionOpen = false"
           @confirm="
-            deleteAction({ id: invoice.id }).then(() => {
-              deleteActionOpen = false;
-            })
+            if (invoice?.id) {
+              deleteAction({ id: invoice.id }).then(() => {
+                deleteActionOpen = false;
+              });
+            }
           "
         >
           <template #default> Delete </template>
