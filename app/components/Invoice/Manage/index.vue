@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { InvoiceState } from '~~/shared/consts/invoice-states';
 import type { InvoiceSchema } from '~~/shared/schemas/invoice';
 
 const { mutateAsync: deleteAction, isPending: deleteActionPending } = useDeleteInvoiceMutation();
+const { mutateAsync: markAsSubmitted, isPending: markActionPending } = useUpdateStateInvoiceMutation();
 
 defineProps<{
   invoice?: InvoiceSchema;
@@ -10,10 +12,6 @@ defineProps<{
 
 const deleteActionOpen = ref(false);
 const markSubmittedAction = ref(false);
-const markAsSubmitted = () => {
-  console.log('The Invoice has been submitted');
-  markSubmittedAction.value = false;
-};
 </script>
 <template>
   <div class="p-4 flex flex-col">
@@ -23,8 +21,16 @@ const markAsSubmitted = () => {
           confirm-action="Submit"
           variant="default"
           v-model:open="markSubmittedAction"
+          v-model:loading="markActionPending"
           @cancel="markSubmittedAction = false"
-          @confirm="markAsSubmitted()"
+          @confirm="
+            if (invoice?.id) {
+              markAsSubmitted({ id: invoice.id, state: InvoiceState.SUBMITTED }).then(() => {
+                markSubmittedAction = false;
+                navigateTo('/invoices');
+              });
+            }
+          "
         >
           <template #default> Mark as Submitted </template>
           <template #title> Submitting Invoice </template>
@@ -38,6 +44,7 @@ const markAsSubmitted = () => {
           confirm-action="Delete"
           variant="danger"
           v-model:open="deleteActionOpen"
+          v-model:loading="deleteActionPending"
           @cancel="deleteActionOpen = false"
           @confirm="
             if (invoice?.id) {

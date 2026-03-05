@@ -9,6 +9,8 @@ import {
   type FilterInvoicesSchema,
   type UpdateInvoiceInfoSchema,
   updateInvoiceInfoSchema,
+  type UpdateInvoiceInfoStateSchema,
+  updateInvoiceInfoStateSchema,
 } from '~~/shared/schemas/invoice';
 
 export const invoicesQueryOptions = (params: FilterInvoicesSchema = {}) =>
@@ -109,6 +111,23 @@ export const useDeleteInvoiceMutation = () => {
     },
     onError: (error, vars) => {
       console.error('Error deleting invoice', error, vars);
+    },
+  });
+};
+
+export const useUpdateStateInvoiceMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (rawParams: UpdateInvoiceInfoStateSchema) => {
+      const params = updateInvoiceInfoStateSchema.parse(rawParams);
+      const dataGateway = await useDataGateway();
+      return dataGateway.getInvoiceService().updateState(params);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    },
+    onError: (error, vars) => {
+      console.error('Error submitting invoice', error, vars);
     },
   });
 };
