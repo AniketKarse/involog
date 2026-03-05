@@ -43,6 +43,7 @@ const markAsSubmitted = () => {
             if (invoice?.id) {
               deleteAction({ id: invoice.id }).then(() => {
                 deleteActionOpen = false;
+                navigateTo('/invoices');
               });
             }
           "
