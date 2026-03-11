@@ -16,7 +16,12 @@ const markSubmittedAction = ref(false);
 <template>
   <div class="p-4 flex flex-col">
     <div class="flex justify-end gap-2">
-      <ShadButton type="submit" variant="default" @click.prevent="markSubmittedAction = true" v-show="isUpdating">
+      <ShadButton
+        type="submit"
+        variant="default"
+        @click.prevent="markSubmittedAction = true"
+        v-show="isUpdating && invoice?.state != 'SUBMITTED'"
+      >
         <AbstractConfirmationBox
           confirm-action="Submit"
           variant="default"
@@ -39,7 +44,12 @@ const markSubmittedAction = ref(false);
           </template>
         </AbstractConfirmationBox>
       </ShadButton>
-      <ShadButton type="submit" variant="destructive" @click.prevent="deleteActionOpen = true" v-show="isUpdating">
+      <ShadButton
+        type="submit"
+        variant="destructive"
+        @click.prevent="deleteActionOpen = true"
+        v-show="isUpdating && invoice?.state != 'SUBMITTED'"
+      >
         <AbstractConfirmationBox
           confirm-action="Delete"
           variant="danger"
