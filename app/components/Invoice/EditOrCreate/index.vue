@@ -421,7 +421,12 @@ defineExpose({ submit });
           </ShadFormItem>
         </ShadFormField>
         <div class="flex justify-end">
-          <ShadButton type="submit" variant="default" :loading="status === 'pending'">
+          <ShadButton
+            type="submit"
+            variant="default"
+            :loading="status === 'pending'"
+            :disabled="invoice?.state == 'SUBMITTED'"
+          >
             {{ isUpdating ? 'Update Invoice' : 'Create Invoice' }}
           </ShadButton>
         </div>
